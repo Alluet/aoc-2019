@@ -36,15 +36,13 @@ fn is_ordered(digits: [u8; 6]) -> bool {
 #[aoc(day4, part1)]
 fn part1(input: &str) -> usize {
     parse_input(input)
-        .filter_map(|n| {
+        .filter(|&n| {
             let digits = get_digits(n);
-            if is_ordered(digits) {
-                digits.windows(2)
+            is_ordered(digits)
+                && digits.windows(2)
                     .filter(|window| window[0] == window[1])
-                    .next().map(|_| ())
-            } else {
-                None
-            }
+                    .next()
+                    .is_some()
         })
         .count()
 }
@@ -52,20 +50,16 @@ fn part1(input: &str) -> usize {
 #[aoc(day4, part2)]
 fn part2(input: &str) -> usize {
     parse_input(input)
-        .filter_map(|n| {
+        .filter(|&n| {
             let digits = get_digits(n);
-            if is_ordered(digits) {
-                let mut counts = [0u8; 10];
-                for &digit in digits.iter() {
-                    counts[digit as usize] += 1;
-                }
-                for &count in counts.iter() {
-                    if count == 2 {
-                        return Some(());
+            is_ordered(digits)
+                && {
+                    let mut counts = [0u8; 10];
+                    for &digit in digits.iter() {
+                        counts[digit as usize] += 1;
                     }
+                    counts.contains(&2)
                 }
-            }
-            None
         })
         .count()
 }
