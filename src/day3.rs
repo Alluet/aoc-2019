@@ -28,35 +28,34 @@ fn parse_input<'a>(input: &'a str) -> [impl Iterator<Item = Movement> + 'a; 2] {
     [iter.next().unwrap(), iter.next().unwrap()]
 }
 
+macro_rules! enumerate_points {
+    ($wire:expr, $pos_ref:expr) => {{
+        ($wire)
+            .flat_map(|(dx, dy, distance)| {
+                (0..distance)
+                    .map(move |_| {
+                        let mut pos = ($pos_ref).borrow_mut();
+                        pos.0 += dx;
+                        pos.1 += dy;
+                        *pos
+                    })
+            })
+    }};
+}
+
 #[aoc(day3, part1)]
 fn part1(input: &str) -> i64 {
     let [first, second] = parse_input(input);
 
     let pos = RefCell::new((0, 0));
     let pos_ref = &pos;
-    let wiring: HashSet<(i64, i64)> = first
-        .flat_map(|(dx, dy, distance)| {
-            (0..distance)
-                .map(move |_| {
-                    let mut pos = pos_ref.borrow_mut();
-                    pos.0 += dx;
-                    pos.1 += dy;
-                    *pos
-                })
-        })
+
+    let wiring: HashSet<(i64, i64)> = enumerate_points!(first, pos_ref)
         .collect();
 
     pos.replace((0, 0));
-    second
-        .flat_map(|(dx, dy, distance)| {
-            (0..distance)
-                .map(move |_| {
-                    let mut pos = pos_ref.borrow_mut();
-                    pos.0 += dx;
-                    pos.1 += dy;
-                    pos
-                })
-        })
+
+    enumerate_points!(second, pos_ref)
         .filter_map(|pos| {
             if wiring.contains(&pos) {
                 Some(pos.0.abs() + pos.1.abs())
@@ -73,30 +72,14 @@ fn part2(input: &str) -> i64 {
 
     let pos = RefCell::new((0, 0));
     let pos_ref = &pos;
-    let wiring: HashMap<(i64, i64), i64> = first
-        .flat_map(|(dx, dy, distance)| {
-            (0..distance)
-                .map(move |_| {
-                    let mut pos = pos_ref.borrow_mut();
-                    pos.0 += dx;
-                    pos.1 += dy;
-                    *pos
-                })
-        })
+
+    let wiring: HashMap<(i64, i64), i64> = enumerate_points!(first, pos_ref)
         .zip(1..)
         .collect();
 
     pos.replace((0, 0));
-    second
-        .flat_map(|(dx, dy, distance)| {
-            (0..distance)
-                .map(move |_| {
-                    let mut pos = pos_ref.borrow_mut();
-                    pos.0 += dx;
-                    pos.1 += dy;
-                    pos
-                })
-        })
+
+    enumerate_points!(second, pos_ref)
         .zip(1..)
         .filter_map(|(pos, distance2)| {
             if let Some(&distance1) = wiring.get(&pos) {
