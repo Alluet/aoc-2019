@@ -40,25 +40,25 @@ fn phase_sequence() -> impl Iterator<Item = [u8; 5]> {
         })
 }
 
-fn amplify_signal(program: &mut [i32], phase: u8, signal: i32) -> i32 {
+fn amplify_signal(program: &mut Vec<i64>, phase: u8, signal: i64) -> i64 {
     let mut output = 0;
     intcode::execute(
         program,
-        [phase as i32, signal].iter().copied(),
+        [phase as i64, signal].iter().copied(),
         |value| output = value,
     );
     output
 }
 
-fn start_feedback(mut program: Vec<i32>, phase: u8)
-    -> mpsc::SyncSender<(mpsc::SyncSender<i32>, mpsc::Receiver<i32>)>
+fn start_feedback(mut program: Vec<i64>, phase: u8)
+    -> mpsc::SyncSender<(mpsc::SyncSender<i64>, mpsc::Receiver<i64>)>
 {
     let (tx, rx) = mpsc::sync_channel(0);
     thread::spawn(move || {
-        let (tx, rx): (mpsc::SyncSender<i32>, mpsc::Receiver<i32>) = rx.recv().unwrap();
+        let (tx, rx): (mpsc::SyncSender<i64>, mpsc::Receiver<i64>) = rx.recv().unwrap();
         intcode::execute(
             &mut program,
-            iter::once(phase as i32)
+            iter::once(phase as i64)
                 .chain(rx.iter()),
             move |value| tx.send(value).unwrap(),
         );
@@ -67,7 +67,7 @@ fn start_feedback(mut program: Vec<i32>, phase: u8)
 }
 
 #[aoc(day7, part1)]
-fn part1(input: &str) -> i32 {
+fn part1(input: &str) -> i64 {
     let program = intcode::parse_program(input);
     let mut state = vec![0; program.len()];
 
@@ -85,7 +85,7 @@ fn part1(input: &str) -> i32 {
 }
 
 #[aoc(day7, part2)]
-fn part2(input: &str) -> i32 {
+fn part2(input: &str) -> i64 {
     let program = intcode::parse_program(input);
 
     phase_sequence()
