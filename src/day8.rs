@@ -47,8 +47,8 @@ fn part2(input: &str) -> Part2 {
             Part2(vec![' '; 25*6]),
             |Part2(mut image), (i, color)| {
                 match color {
-                    b'0' => image[i] = '⬛',
-                    b'1' => image[i] = '⬜',
+                    b'0' => image[i] = ' ',
+                    b'1' => image[i] = '█',
                     _ => (),
                 }
                 Part2(image)
@@ -60,9 +60,11 @@ struct Part2(Vec<char>);
 
 impl fmt::Display for Part2 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "\n┌───────────────────────────┐")?;
         for line in self.0.chunks(25) {
-            write!(f, "\n{}", line.iter().collect::<String>())?;
+            write!(f, "\n│ {} │", line.iter().collect::<String>())?;
         }
+        write!(f, "\n└───────────────────────────┘")?;
 
         Ok(())
     }
